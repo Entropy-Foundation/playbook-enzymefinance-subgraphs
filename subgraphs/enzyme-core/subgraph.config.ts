@@ -15,10 +15,13 @@ import { base } from './contexts/base';
 import { ethereum } from './contexts/ethereum';
 import { ethereumDev } from './contexts/ethereum-dev';
 import { polygon } from './contexts/polygon';
+import { sepolia } from './contexts/sepolia';
 import { testnet } from './contexts/testnet';
 
 export interface Variables {
   block: number;
+  instructionInbox: string;
+  instructionInboxDeploymentBlock: number;
   wethTokenAddress: string;
   wrappedNativeTokenAddress: string;
   chainlinkAggregatorAddresses: {
@@ -72,6 +75,7 @@ export const contexts: Contexts<Variables> = {
   ethereum,
   'ethereum-dev': ethereumDev,
   polygon,
+  sepolia,
   testnet,
 };
 
@@ -222,6 +226,13 @@ export const configure: Configurator<Variables> = (variables) => {
     ...v2.sources(variables.releases.v2).map((item) => ({ ...item, version: 2, block: variables.block })),
     ...v3.sources(variables.releases.v3).map((item) => ({ ...item, version: 3, block: variables.block })),
     ...v4.sources(variables.releases.v4).map((item) => ({ ...item, version: 4, block: variables.block })),
+    {
+      name: 'InstructionInbox',
+      abi: 'abis/InstructionInbox.json',
+      block: variables.instructionInboxDeploymentBlock,
+      address: variables.instructionInbox,
+      events: (abi) => [abi.getEvent('FundCreationInitiated')],
+    },
   ];
 
   const templates: DataSourceTemplateUserDeclaration[] = [

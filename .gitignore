@@ -15,3 +15,6 @@ node_modules/
 
 # subgraph manifests are generated from a template
 subgraph.yaml
+
+# local deploy notes
+subgraphs/enzyme-core/DEPLOY.md

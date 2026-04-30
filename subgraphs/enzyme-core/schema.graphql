@@ -150,6 +150,8 @@ type Vault @entity(immutable: false) {
   comptroller: Comptroller!
   release: Release!
   inception: Int!
+  strategyId: BigInt
+  fundCreator: Bytes
 
   creator: Account!
   owner: Account!

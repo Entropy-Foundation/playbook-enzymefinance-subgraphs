@@ -26,6 +26,8 @@ export function createVault(
   vault.freelyTransferableShares = false;
   vault.depositCount = 0;
   vault.lastAssetUpdate = 0;
+  vault.strategyId = null;
+  vault.fundCreator = null;
   vault.save();
 
   let activity = new VaultCreated(vault.id);
