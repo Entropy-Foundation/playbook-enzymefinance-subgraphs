@@ -10,7 +10,7 @@ export const sepolia: Context<Variables> = {
   variables: {
     block: 10722582,
     instructionInbox: '0x9D8A6FdBE27BDfd3579Fd0CD0371df094573668b',
-    instructionInboxDeploymentBlock: 10761900,
+    instructionInboxDeploymentBlock: 10722582,
     wethTokenAddress: ZERO,
     wrappedNativeTokenAddress: ZERO,
     chainlinkAggregatorAddresses: {
