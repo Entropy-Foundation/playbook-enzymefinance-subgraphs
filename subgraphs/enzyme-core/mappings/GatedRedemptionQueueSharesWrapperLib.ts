@@ -1,6 +1,9 @@
 import { arrayDiff, arrayUnique, toBigDecimal, UINT256_MAX_BD, uniqueEventId } from '@enzymefinance/subgraph-utils';
+import { BigInt } from '@graphprotocol/graph-ts';
 import { ensureAccount } from '../entities/Account';
 import { ensureAsset, isAsset } from '../entities/Asset';
+import { ensureUniqueDepositor, ensureVaultDepositor } from '../entities/Depositor';
+import { useVault } from '../entities/Vault';
 import {
   ensureGatedRedemptionQueueSharesWrapper,
   ensureGatedRedemptionQueueSharesWrapperDepositApproval,
@@ -164,6 +167,7 @@ export function handleDeposited(event: Deposited): void {
   let account = ensureAccount(event.params.user, event);
   let asset = ensureAsset(event.params.depositToken);
   let sharesReceived = toBigDecimal(event.params.sharesReceived);
+  let depositAmount = toBigDecimal(event.params.depositTokenAmount, asset.decimals);
 
   let deposit = new GatedRedemptionQueueSharesWrapperDeposit(uniqueEventId(event));
   deposit.timestamp = event.block.timestamp.toI32();
@@ -172,7 +176,7 @@ export function handleDeposited(event: Deposited): void {
   deposit.account = account.id;
   deposit.depositAssetAmount = createAssetAmount(
     asset,
-    toBigDecimal(event.params.depositTokenAmount, asset.decimals),
+    depositAmount,
     asset,
     'gated-redemption-queue-shares-wrapper-deposit',
     event,
@@ -180,6 +184,27 @@ export function handleDeposited(event: Deposited): void {
   deposit.shares = sharesReceived;
   deposit.depositorBalance = gatedRedemptionQueueSharesWrapperDepositorBalanceId(wrapper, account);
   deposit.save();
+
+  // Per-vault unique depositor aggregates for the discovery card.
+  let vault = useVault(wrapper.vault);
+  let depositor = ensureUniqueDepositor(event.params.user, event);
+  let vaultDepositorWithFlag = ensureVaultDepositor(vault, depositor, event);
+  let vaultDepositor = vaultDepositorWithFlag.entity;
+
+  vaultDepositor.lastDepositAt = event.block.timestamp.toI32();
+  vaultDepositor.totalDeposited = vaultDepositor.totalDeposited.plus(depositAmount);
+  vaultDepositor.depositCount = vaultDepositor.depositCount + 1;
+  vaultDepositor.save();
+
+  depositor.lastDepositAt = event.block.timestamp.toI32();
+  depositor.totalDepositedAcrossVaults = depositor.totalDepositedAcrossVaults.plus(depositAmount);
+  depositor.save();
+
+  if (vaultDepositorWithFlag.isFirstDeposit) {
+    vault.depositorCount = vault.depositorCount.plus(BigInt.fromI32(1));
+  }
+  vault.totalDeposited = vault.totalDeposited.plus(depositAmount);
+  vault.save();
 
   // remove approval if needed
   if (wrapper.useDepositApprovals == true) {

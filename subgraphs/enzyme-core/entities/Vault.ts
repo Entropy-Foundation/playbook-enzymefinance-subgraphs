@@ -1,4 +1,4 @@
-import { logCritical } from '@enzymefinance/subgraph-utils';
+import { logCritical, ZERO_BD, ZERO_BI } from '@enzymefinance/subgraph-utils';
 import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { Account, Comptroller, Release, Vault, VaultCreated } from '../generated/schema';
 import { getActivityCounter, getVaultCounter } from './Counter';
@@ -26,6 +26,8 @@ export function createVault(
   vault.freelyTransferableShares = false;
   vault.depositCount = 0;
   vault.lastAssetUpdate = 0;
+  vault.depositorCount = ZERO_BI;
+  vault.totalDeposited = ZERO_BD;
   vault.strategyId = null;
   vault.fundCreator = null;
   vault.save();

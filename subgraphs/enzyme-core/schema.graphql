@@ -165,6 +165,9 @@ type Vault @entity(immutable: false) {
   depositCount: Int!
   lastAssetUpdate: Int!
 
+  depositorCount: BigInt!
+  totalDeposited: BigDecimal!
+
   protocolFee: ProtocolFee
   protocolFeeSharesPaid: [ProtocolFeePaid!]! @derivedFrom(field: "vault")
   protocolFeeBurned: [ProtocolFeeBurned!]! @derivedFrom(field: "vault")
@@ -177,8 +180,27 @@ type Vault @entity(immutable: false) {
   migrations: [Migration!]! @derivedFrom(field: "vault")
   reconfigurations: [Reconfiguration!]! @derivedFrom(field: "vault")
   sharesChanges: [SharesChange!]! @derivedFrom(field: "vault")
+  depositors: [VaultDepositor!]! @derivedFrom(field: "vault")
 
   vaultActivity: [VaultActivity!]! @derivedFrom(field: "vault")
+}
+
+type Depositor @entity(immutable: false) {
+  id: ID!
+  firstDepositAt: Int!
+  lastDepositAt: Int!
+  totalDepositedAcrossVaults: BigDecimal!
+  vaults: [VaultDepositor!]! @derivedFrom(field: "depositor")
+}
+
+type VaultDepositor @entity(immutable: false) {
+  id: ID!
+  vault: Vault!
+  depositor: Depositor!
+  firstDepositAt: Int!
+  lastDepositAt: Int!
+  totalDeposited: BigDecimal!
+  depositCount: Int!
 }
 
 type Comptroller @entity(immutable: false) {
