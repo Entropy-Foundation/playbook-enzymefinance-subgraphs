@@ -52,6 +52,10 @@ import {
   GatedRedemptionQueueSharesWrapperTransferOutForced,
 } from '../generated/schema';
 import { createAssetAmount } from '../entities/AssetAmount';
+import {
+  createVaultDepositTransaction,
+  createVaultWithdrawTransaction,
+} from '../entities/VaultTransaction';
 
 // Configuration
 
@@ -205,6 +209,15 @@ export function handleDeposited(event: Deposited): void {
   }
   vault.totalDeposited = vault.totalDeposited.plus(depositAmount);
   vault.save();
+
+  createVaultDepositTransaction(
+    wrapper.vault,
+    event.params.user,
+    event.params.depositToken,
+    event.params.depositTokenAmount,
+    event.params.sharesReceived,
+    event,
+  );
 
   // remove approval if needed
   if (wrapper.useDepositApprovals == true) {
@@ -368,6 +381,15 @@ export function handleRedeemed(event: Redeemed): void {
   redemption.payoutAssetAmounts = new Array<string>();
   redemption.depositorBalance = gatedRedemptionQueueSharesWrapperDepositorBalanceId(wrapper, account);
   redemption.save();
+
+  createVaultWithdrawTransaction(
+    wrapper.vault,
+    event.params.user,
+    event.params.redemptionAsset,
+    event.params.redemptionAssetAmount,
+    event.params.sharesAmount,
+    event,
+  );
 
   // update request
   let requestId = gatedRedemptionQueueSharesWrapperRedemptionRequestId(wrapper, account);

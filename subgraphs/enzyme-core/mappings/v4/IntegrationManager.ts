@@ -4,6 +4,7 @@ import { ensureAsset } from '../../entities/Asset';
 import { createAssetAmount } from '../../entities/AssetAmount';
 import { ensureComptroller } from '../../entities/Comptroller';
 import { trackTrade } from '../../entities/Trade';
+import { createVaultSwapTransaction } from '../../entities/VaultTransaction';
 import { useVault } from '../../entities/Vault';
 import {
   CallOnIntegrationExecutedForFund,
@@ -151,6 +152,18 @@ export function handleCallOnIntegrationExecutedForFund(event: CallOnIntegrationE
     event.params.integrationData,
     event,
   );
+
+  if (event.params.spendAssets.length > 0 && event.params.incomingAssets.length > 0) {
+    createVaultSwapTransaction(
+      vault.id,
+      event.params.adapter,
+      event.params.spendAssets[0],
+      event.params.spendAssetAmounts[0],
+      event.params.incomingAssets[0],
+      event.params.incomingAssetAmounts[0],
+      event,
+    );
+  }
 }
 
 export function handleValidatedVaultProxySetForFund(event: ValidatedVaultProxySetForFund): void {}

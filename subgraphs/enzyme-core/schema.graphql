@@ -2511,3 +2511,38 @@ type SingleAssetDepositQueueRequest @entity(immutable: false) {
   canceled: Boolean!
   canceledAt: Int
 }
+
+#################################################
+# Vault Transaction History (Txs tab)
+#################################################
+
+enum VaultTxType {
+  Deposit
+  Withdraw
+  Swap
+}
+
+type VaultTransaction @entity(immutable: true) {
+  id: ID!
+  vault: Vault!
+  type: VaultTxType!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+
+  user: Bytes
+
+  depositAsset: Bytes
+  depositAmount: BigInt
+  sharesMinted: BigInt
+
+  redemptionAsset: Bytes
+  redemptionAmount: BigInt
+  sharesBurned: BigInt
+
+  adapter: Bytes
+  fromAsset: Bytes
+  fromAmount: BigInt
+  toAsset: Bytes
+  toAmount: BigInt
+}
