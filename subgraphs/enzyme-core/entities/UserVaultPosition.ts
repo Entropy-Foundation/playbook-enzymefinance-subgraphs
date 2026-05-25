@@ -1,5 +1,11 @@
-import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
-import { UserVaultPosition, UserVaultActivity, RedemptionExecutedInTxMarker } from '../generated/schema';
+import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import {
+  GatedRedemptionQueueSharesWrapper,
+  RedemptionExecutedInTxMarker,
+  UserVaultActivity,
+  UserVaultPosition,
+  Vault,
+} from '../generated/schema';
 
 export function userVaultPositionId(user: Address, wrapper: Address): string {
   return user.toHex() + '-' + wrapper.toHex();
@@ -10,10 +16,26 @@ export function ensureUserVaultPosition(user: Address, wrapper: Address, event: 
   let position = UserVaultPosition.load(id);
 
   if (position == null) {
+    let wrapperEntity = GatedRedemptionQueueSharesWrapper.load(wrapper.toHex());
+    if (wrapperEntity == null) {
+      log.critical('UserVaultPosition: missing GatedRedemptionQueueSharesWrapper {} for user {}', [
+        wrapper.toHex(),
+        user.toHex(),
+      ]);
+    }
+    let vaultId = (wrapperEntity as GatedRedemptionQueueSharesWrapper).vault;
+
     position = new UserVaultPosition(id);
     position.user = user;
     position.wrapper = wrapper;
+    position.vault = vaultId;
     position.firstSeenBlock = event.block.number;
+
+    let vault = Vault.load(vaultId);
+    if (vault != null) {
+      vault.userDepositorCount = vault.userDepositorCount.plus(BigInt.fromI32(1));
+      vault.save();
+    }
   }
 
   position.lastUpdatedBlock = event.block.number;

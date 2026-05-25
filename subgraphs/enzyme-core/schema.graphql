@@ -166,6 +166,7 @@ type Vault @entity(immutable: false) {
   lastAssetUpdate: Int!
 
   depositorCount: BigInt!
+  userDepositorCount: BigInt!
   totalDeposited: BigDecimal!
 
   protocolFee: ProtocolFee
@@ -181,6 +182,7 @@ type Vault @entity(immutable: false) {
   reconfigurations: [Reconfiguration!]! @derivedFrom(field: "vault")
   sharesChanges: [SharesChange!]! @derivedFrom(field: "vault")
   depositors: [VaultDepositor!]! @derivedFrom(field: "vault")
+  userDepositors: [UserVaultPosition!]! @derivedFrom(field: "vault")
 
   vaultActivity: [VaultActivity!]! @derivedFrom(field: "vault")
 }
@@ -2453,6 +2455,7 @@ type UserVaultPosition @entity(immutable: false) {
   id: ID! # `${user}-${wrapper}`
   user: Bytes!
   wrapper: Bytes!
+  vault: Vault!
   firstSeenBlock: BigInt!
   lastUpdatedBlock: BigInt!
   activity: [UserVaultActivity!]! @derivedFrom(field: "position")

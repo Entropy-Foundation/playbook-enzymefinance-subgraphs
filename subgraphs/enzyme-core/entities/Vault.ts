@@ -27,6 +27,7 @@ export function createVault(
   vault.depositCount = 0;
   vault.lastAssetUpdate = 0;
   vault.depositorCount = ZERO_BI;
+  vault.userDepositorCount = ZERO_BI;
   vault.totalDeposited = ZERO_BD;
   vault.strategyId = null;
   vault.fundCreator = null;
