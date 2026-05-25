@@ -51,6 +51,13 @@ import {
   GatedRedemptionQueueSharesWrapperTransferOut,
   GatedRedemptionQueueSharesWrapperTransferOutForced,
 } from '../generated/schema';
+import {
+  UserVaultActivityType,
+  appendUserVaultActivity,
+  ensureUserVaultPosition,
+  markRedemptionExecutedInTx,
+  wasRedemptionExecutedInTx,
+} from '../entities/UserVaultPosition';
 import { createAssetAmount } from '../entities/AssetAmount';
 import {
   createVaultDepositTransaction,
@@ -219,6 +226,16 @@ export function handleDeposited(event: Deposited): void {
     event,
   );
 
+  appendUserVaultActivity(
+    event.params.user,
+    event.address,
+    UserVaultActivityType.DEPOSIT,
+    event,
+    event.params.sharesReceived,
+    event.params.depositTokenAmount,
+    event.params.depositToken,
+  );
+
   // remove approval if needed
   if (wrapper.useDepositApprovals == true) {
     let approval = ensureGatedRedemptionQueueSharesWrapperDepositApproval(wrapper, account, asset);
@@ -295,6 +312,17 @@ export function handleTransfer(event: Transfer): void {
     recipientBalance.shares = recipientBalance.shares.plus(sharesAmount);
     recipientBalance.save();
   }
+
+  // Discovery: a Transfer surfaces the (user, wrapper) pair on the Portfolio page,
+  // but does NOT produce a UserVaultActivity row — wrapper-share transfers are
+  // intentionally excluded from the Activity Tab. Skip mint/burn legs (zero address)
+  // since those are already covered by Deposited / Redeemed.
+  if (event.params.from.notEqual(ZERO_ADDRESS)) {
+    ensureUserVaultPosition(event.params.from, event.address, event);
+  }
+  if (event.params.to.notEqual(ZERO_ADDRESS)) {
+    ensureUserVaultPosition(event.params.to, event.address, event);
+  }
 }
 
 export function handleTransferForced(event: TransferForced): void {
@@ -350,6 +378,16 @@ export function handleRedemptionRequestAdded(event: RedemptionRequestAdded): voi
   request.timestamp = event.block.timestamp.toI32();
   request.save();
 
+  appendUserVaultActivity(
+    event.params.user,
+    event.address,
+    UserVaultActivityType.REDEMPTION_QUEUED,
+    event,
+    event.params.sharesAmount,
+    null,
+    null,
+  );
+
   // remove approval if needed
   if (wrapper.useRedemptionApprovals == true) {
     let approval = ensureGatedRedemptionQueueSharesWrapperRedemptionApproval(wrapper, account);
@@ -365,6 +403,25 @@ export function handleRedemptionRequestRemoved(event: RedemptionRequestRemoved):
 
   let request = ensureGatedRedemptionQueueSharesWrapperRedemptionRequest(wrapper, account);
   store.remove('GatedRedemptionQueueSharesWrapperRedemptionRequest', request.id);
+
+  // RedemptionRequestRemoved fires in two cases:
+  //   1. cancelRequestRedeem() → a real cancellation
+  //   2. redeemFromQueue() → queue cleanup that follows a Redeemed event
+  // In case 2 the Redeemed handler has already run and dropped a marker, so we
+  // skip the activity row (REDEMPTION_EXECUTED is the canonical record).
+  if (wasRedemptionExecutedInTx(event, event.params.user, event.address)) {
+    return;
+  }
+
+  appendUserVaultActivity(
+    event.params.user,
+    event.address,
+    UserVaultActivityType.REDEMPTION_CANCELLED,
+    event,
+    null,
+    null,
+    null,
+  );
 }
 
 export function handleRedeemed(event: Redeemed): void {
@@ -389,6 +446,20 @@ export function handleRedeemed(event: Redeemed): void {
     event.params.redemptionAssetAmount,
     event.params.sharesAmount,
     event,
+  );
+
+  // Mark this tx as having had an execution so the paired RedemptionRequestRemoved
+  // handler can skip emitting a REDEMPTION_CANCELLED activity row.
+  markRedemptionExecutedInTx(event, event.params.user, event.address);
+
+  appendUserVaultActivity(
+    event.params.user,
+    event.address,
+    UserVaultActivityType.REDEMPTION_EXECUTED,
+    event,
+    event.params.sharesAmount,
+    event.params.redemptionAssetAmount,
+    event.params.redemptionAsset,
   );
 
   // update request

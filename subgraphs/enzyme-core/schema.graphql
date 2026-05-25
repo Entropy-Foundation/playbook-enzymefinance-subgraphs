@@ -2441,6 +2441,60 @@ enum GatedRedemptionQueueSharesWrapperDepositMode {
 }
 
 #################################################
+# User Vault Position (Portfolio vTokens tab)
+#################################################
+# Discovery index: one record per (user, wrapper) pair that has ever interacted
+# with the wrapper (via Deposited, Redemption*, or Transfer events). The Portfolio
+# page uses `userVaultPositions(where: { user })` to find which vaults to render
+# cards for; per-bucket share balances (available / queued / locked) are read
+# fresh on-chain at display time, not stored here.
+
+type UserVaultPosition @entity(immutable: false) {
+  id: ID! # `${user}-${wrapper}`
+  user: Bytes!
+  wrapper: Bytes!
+  firstSeenBlock: BigInt!
+  lastUpdatedBlock: BigInt!
+  activity: [UserVaultActivity!]! @derivedFrom(field: "position")
+}
+
+# Append-only activity log used by the Portfolio Activity tab. One row per
+# semantic event the user took on a wrapper. Transfers and approvals are NOT
+# recorded here; only the four ActivityType values below.
+
+type UserVaultActivity @entity(immutable: true) {
+  id: ID! # `${txHash}-${logIndex}-${user}`
+  position: UserVaultPosition!
+  user: Bytes!
+  wrapper: Bytes!
+  type: UserVaultActivityType!
+  txHash: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+
+  # Polymorphic amount fields; population depends on `type` (see UserVaultActivityType docs).
+  shareAmount: BigInt
+  denomAssetAmount: BigInt
+  denomAsset: Bytes
+}
+
+enum UserVaultActivityType {
+  DEPOSIT # wrapper.Deposited
+  REDEMPTION_QUEUED # wrapper.RedemptionRequestAdded
+  REDEMPTION_CANCELLED # wrapper.RedemptionRequestRemoved (not paired with Redeemed in same tx)
+  REDEMPTION_EXECUTED # wrapper.Redeemed
+}
+
+# Transient marker used by the wrapper mapping to disambiguate
+# RedemptionRequestRemoved between a real cancellation and the queue cleanup
+# that fires alongside Redeemed in redeemFromQueue. Set in handleRedeemed,
+# checked in handleRedemptionRequestRemoved. Not intended for client queries.
+
+type RedemptionExecutedInTxMarker @entity(immutable: true) {
+  id: ID! # `${txHash}-${user}-${wrapper}`
+}
+
+#################################################
 # Single Asset Redemption Queue
 #################################################
 
