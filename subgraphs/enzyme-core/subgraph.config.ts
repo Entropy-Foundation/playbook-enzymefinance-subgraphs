@@ -22,6 +22,8 @@ export interface Variables {
   block: number;
   instructionInbox: string;
   instructionInboxDeploymentBlock: number;
+  bridgeManager: string;
+  bridgeManagerDeploymentBlock: number;
   wethTokenAddress: string;
   wrappedNativeTokenAddress: string;
   chainlinkAggregatorAddresses: {
@@ -232,6 +234,13 @@ export const configure: Configurator<Variables> = (variables) => {
       block: variables.instructionInboxDeploymentBlock,
       address: variables.instructionInbox,
       events: (abi) => [abi.getEvent('FundCreationInitiated')],
+    },
+    {
+      name: 'BridgeManager',
+      abi: 'abis/BridgeManager.json',
+      block: variables.bridgeManagerDeploymentBlock,
+      address: variables.bridgeManager,
+      events: (abi) => [abi.getEvent('ExecutionRevertedNotified')],
     },
   ];
 

@@ -51,6 +51,18 @@ export function createVaultWithdrawTransaction(
   tx.save();
 }
 
+export function createVaultExecutionRevertedTransaction(
+  vaultId: string,
+  sender: Address,
+  chainId: BigInt,
+  event: ethereum.Event,
+): void {
+  let tx = newVaultTransaction(vaultId, 'ExecutionReverted', event);
+  tx.sender = sender as Bytes;
+  tx.chainId = chainId;
+  tx.save();
+}
+
 export function createVaultSwapTransaction(
   vaultId: string,
   adapter: Address,

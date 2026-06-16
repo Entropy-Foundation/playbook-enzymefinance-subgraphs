@@ -2577,6 +2577,7 @@ enum VaultTxType {
   Deposit
   Withdraw
   Swap
+  ExecutionReverted
 }
 
 type VaultTransaction @entity(immutable: true) {
@@ -2602,4 +2603,7 @@ type VaultTransaction @entity(immutable: true) {
   fromAmount: BigInt
   toAsset: Bytes
   toAmount: BigInt
+
+  sender: Bytes
+  chainId: BigInt
 }
