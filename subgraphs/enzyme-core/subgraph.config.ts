@@ -24,6 +24,11 @@ export interface Variables {
   instructionInboxDeploymentBlock: number;
   bridgeManager: string;
   bridgeManagerDeploymentBlock: number;
+  // Hypernova bridge — emits MessagePosted carrying messageIdB (Eth→Supra) for
+  // swap and queue-state. Optional: only networks that set it get
+  // the data source.
+  hypernova?: string;
+  hypernovaDeploymentBlock?: number;
   wethTokenAddress: string;
   wrappedNativeTokenAddress: string;
   chainlinkAggregatorAddresses: {
@@ -233,7 +238,13 @@ export const configure: Configurator<Variables> = (variables) => {
       abi: 'abis/InstructionInbox.json',
       block: variables.instructionInboxDeploymentBlock,
       address: variables.instructionInbox,
-      events: (abi) => [abi.getEvent('FundCreationInitiated')],
+      events: (abi) => [
+        abi.getEvent('FundCreationInitiated'),
+        abi.getEvent('MessageReceived'),
+        abi.getEvent('RedemptionQueueProcessed'),
+        abi.getEvent('ExecutionReverted'),
+        abi.getEvent('QueueStateQueried'),
+      ],
     },
     {
       name: 'BridgeManager',
@@ -243,6 +254,18 @@ export const configure: Configurator<Variables> = (variables) => {
       events: (abi) => [abi.getEvent('ExecutionRevertedNotified')],
     },
   ];
+
+  // Hypernova bridge (swap / queue): emits MessagePosted carrying the
+  // Eth→Supra messageIdB. Only added when the active network configures it.
+  if (variables.hypernova) {
+    sources.push({
+      name: 'Hypernova',
+      abi: 'abis/Hypernova.json',
+      block: variables.hypernovaDeploymentBlock ?? variables.block,
+      address: variables.hypernova,
+      events: (abi) => [abi.getEvent('MessagePosted')],
+    });
+  }
 
   const templates: DataSourceTemplateUserDeclaration[] = [
     ...persistent.templates,

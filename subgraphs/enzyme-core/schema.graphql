@@ -2607,3 +2607,72 @@ type VaultTransaction @entity(immutable: true) {
   sender: Bytes
   chainId: BigInt
 }
+
+# Cross-chain strategy-execution operation legs (Ethereum side).
+# These mirror raw on-chain events 1:1 so the backend subgraph-poller can pull
+# them and assemble the operation cards, pairing to the Supra side by messageId.
+
+# InstructionInbox.MessageReceived — the inbound cross-chain message landing on
+# Ethereum. `messageId` pairs back to the Supra MessagePostedEvent (messageIdA).
+type CrossChainMessageReceived @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  messageId: BigInt!
+  srcChainId: BigInt!
+  caller: Bytes!
+  toChainId: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# InstructionInbox.RedemptionQueueProcessed — the redemption batch processed on
+# Ethereum (same tx as the MessageReceived). Joined to the message by txHash.
+type RedemptionQueueProcessedEvent @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  vault: Bytes!
+  wrapper: Bytes!
+  startIndex: BigInt!
+  endIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# InstructionInbox.ExecutionReverted — a settle that reverted on Ethereum (swap
+# revert path). `reason` is raw revert return-data; the backend decodes it.
+type ExecutionRevertedEvent @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  vault: Bytes!
+  srcSender: Bytes!
+  messageType: BigInt!
+  actionId: BigInt!
+  reason: Bytes!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# InstructionInbox.QueueStateQueried — queue state read on Ethereum (queue,
+# step 2). Joined to the message by txHash.
+type QueueStateQueriedEvent @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  vault: Bytes!
+  queueLength: BigInt!
+  totalDenominationAssetNeeded: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Hypernova.MessagePosted — outbound Eth→Supra message carrying messageIdB. The
+# backend joins it by txHash to the settle/handle tx, then writes messageIdB
+# onto the operation so the Supra reply leg can pair to it.
+type HypernovaMessagePosted @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  caller: Bytes!
+  messageId: BigInt!
+  toChainId: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
