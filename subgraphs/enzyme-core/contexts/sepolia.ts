@@ -13,6 +13,8 @@ export const sepolia: Context<Variables> = {
     instructionInboxDeploymentBlock: 10832200,
     bridgeManager: '0xF3704A2ed05880Db2CAf53cD54Af9737982EAa58',
     bridgeManagerDeploymentBlock: 10832200,
+    hypernova: '0x76C401D66ee424678A9d9e0530bB5B6818988233',
+    hypernovaDeploymentBlock: 10832200,
     wethTokenAddress: ZERO,
     wrappedNativeTokenAddress: ZERO,
     chainlinkAggregatorAddresses: {
