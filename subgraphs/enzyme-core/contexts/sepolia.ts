@@ -8,13 +8,13 @@ export const sepolia: Context<Variables> = {
   deploymentId: 'playbook-subgrap',
   network: 'sepolia',
   variables: {
-    block: 11078778,
+    block: 11086920,
     instructionInbox: '0x0671EC2879f6fE1cb971f748eB75b31B7b6bff8C',
-    instructionInboxDeploymentBlock: 11078778,
+    instructionInboxDeploymentBlock: 11086920,
     bridgeManager: '0xB536C92F3B0c2a687e6Ac15FA2fC6F849a202597',
-    bridgeManagerDeploymentBlock: 11078778,
+    bridgeManagerDeploymentBlock: 11086920,
     hypernova: '0x76C401D66ee424678A9d9e0530bB5B6818988233',
-    hypernovaDeploymentBlock: 11078778,
+    hypernovaDeploymentBlock: 11086920,
     wethTokenAddress: ZERO,
     wrappedNativeTokenAddress: ZERO,
     chainlinkAggregatorAddresses: {
