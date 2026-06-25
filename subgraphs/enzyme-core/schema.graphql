@@ -152,6 +152,10 @@ type Vault @entity(immutable: false) {
   inception: Int!
   strategyId: BigInt
   fundCreator: Bytes
+  # Creation tx hash + block — set in handleNewFundCreated so consumers (e.g. the
+  # backend vault-backfill cron) can recover txHash/blockNumber without an RPC call.
+  creationTransaction: Bytes
+  creationBlock: BigInt
 
   creator: Account!
   owner: Account!

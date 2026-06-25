@@ -56,6 +56,8 @@ export function handleNewFundCreated(event: NewFundCreated): void {
   );
 
   vault.protocolFee = useProtocolFee(event.params.vaultProxy, protocolFee).id;
+  vault.creationTransaction = event.transaction.hash;
+  vault.creationBlock = event.block.number;
   vault.save();
 
   trackNetworkFunds(event);
