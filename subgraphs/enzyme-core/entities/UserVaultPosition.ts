@@ -1,6 +1,7 @@
 import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
 import {
   GatedRedemptionQueueSharesWrapper,
+  PendingRedemptionCancelled,
   RedemptionExecutedInTxMarker,
   UserVaultActivity,
   UserVaultPosition,
@@ -110,4 +111,37 @@ export function markRedemptionExecutedInTx(event: ethereum.Event, user: Address,
 export function wasRedemptionExecutedInTx(event: ethereum.Event, user: Address, wrapper: Address): boolean {
   let id = redemptionExecutedMarkerId(event, user, wrapper);
   return RedemptionExecutedInTxMarker.load(id) != null;
+}
+
+// Covers the reverse ordering, where RedemptionRequestRemoved is processed
+// before Redeemed in the same tx. handleRedemptionRequestRemoved records the
+// id of the REDEMPTION_CANCELLED row it just wrote; handleRedeemed consumes it
+// and deletes that row so only REDEMPTION_EXECUTED survives.
+
+export function markRedemptionCancelledPending(
+  event: ethereum.Event,
+  user: Address,
+  wrapper: Address,
+  activityId: string,
+): void {
+  let id = redemptionExecutedMarkerId(event, user, wrapper);
+  if (PendingRedemptionCancelled.load(id) != null) {
+    return;
+  }
+  let pending = new PendingRedemptionCancelled(id);
+  pending.activityId = activityId;
+  pending.save();
+}
+
+export function consumeRedemptionCancelledPending(
+  event: ethereum.Event,
+  user: Address,
+  wrapper: Address,
+): string | null {
+  let id = redemptionExecutedMarkerId(event, user, wrapper);
+  let pending = PendingRedemptionCancelled.load(id);
+  if (pending == null) {
+    return null;
+  }
+  return pending.activityId;
 }

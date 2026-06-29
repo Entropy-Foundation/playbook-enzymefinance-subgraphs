@@ -2501,6 +2501,17 @@ type RedemptionExecutedInTxMarker @entity(immutable: true) {
   id: ID! # `${txHash}-${user}-${wrapper}`
 }
 
+# Companion marker for the reverse event ordering: when RedemptionRequestRemoved
+# is processed BEFORE Redeemed in the same tx, the REDEMPTION_CANCELLED activity
+# row has already been written. This records that row's id (keyed by
+# `${txHash}-${user}-${wrapper}`) so handleRedeemed can find and delete it,
+# leaving only the canonical REDEMPTION_EXECUTED row. Not for client queries.
+
+type PendingRedemptionCancelled @entity(immutable: true) {
+  id: ID! # `${txHash}-${user}-${wrapper}`
+  activityId: String! # id of the UserVaultActivity REDEMPTION_CANCELLED row to delete
+}
+
 #################################################
 # Single Asset Redemption Queue
 #################################################

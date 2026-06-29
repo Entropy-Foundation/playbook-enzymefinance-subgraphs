@@ -57,6 +57,8 @@ import {
   ensureUserVaultPosition,
   markRedemptionExecutedInTx,
   wasRedemptionExecutedInTx,
+  markRedemptionCancelledPending,
+  consumeRedemptionCancelledPending,
 } from '../entities/UserVaultPosition';
 import { createAssetAmount } from '../entities/AssetAmount';
 import {
@@ -407,13 +409,16 @@ export function handleRedemptionRequestRemoved(event: RedemptionRequestRemoved):
   // RedemptionRequestRemoved fires in two cases:
   //   1. cancelRequestRedeem() → a real cancellation
   //   2. redeemFromQueue() → queue cleanup that follows a Redeemed event
-  // In case 2 the Redeemed handler has already run and dropped a marker, so we
-  // skip the activity row (REDEMPTION_EXECUTED is the canonical record).
+  // Disambiguation must be order-independent (the two events can be emitted in
+  // either log order within the tx):
+  //   - Redeemed already processed → its marker is set, skip writing the row.
+  //   - Redeemed not yet processed → write the row, but remember its id so the
+  //     later Redeemed handler can delete it (markRedemptionCancelledPending).
   if (wasRedemptionExecutedInTx(event, event.params.user, event.address)) {
     return;
   }
 
-  appendUserVaultActivity(
+  let activity = appendUserVaultActivity(
     event.params.user,
     event.address,
     UserVaultActivityType.REDEMPTION_CANCELLED,
@@ -422,6 +427,7 @@ export function handleRedemptionRequestRemoved(event: RedemptionRequestRemoved):
     null,
     null,
   );
+  markRedemptionCancelledPending(event, event.params.user, event.address, activity.id);
 }
 
 export function handleRedeemed(event: Redeemed): void {
@@ -449,8 +455,15 @@ export function handleRedeemed(event: Redeemed): void {
   );
 
   // Mark this tx as having had an execution so the paired RedemptionRequestRemoved
-  // handler can skip emitting a REDEMPTION_CANCELLED activity row.
+  // handler can skip emitting a REDEMPTION_CANCELLED activity row (Redeemed-first
+  // ordering). For the reverse ordering, RedemptionRequestRemoved has already
+  // written that row — delete it here so only REDEMPTION_EXECUTED survives.
   markRedemptionExecutedInTx(event, event.params.user, event.address);
+
+  let pendingCancelledId = consumeRedemptionCancelledPending(event, event.params.user, event.address);
+  if (pendingCancelledId !== null) {
+    store.remove('UserVaultActivity', pendingCancelledId as string);
+  }
 
   appendUserVaultActivity(
     event.params.user,
