@@ -16,6 +16,7 @@ import { ethereum } from './contexts/ethereum';
 import { ethereumDev } from './contexts/ethereum-dev';
 import { polygon } from './contexts/polygon';
 import { sepolia } from './contexts/sepolia';
+import { sepoliaDevnet } from './contexts/sepolia-devnet';
 import { testnet } from './contexts/testnet';
 
 export interface Variables {
@@ -83,6 +84,7 @@ export const contexts: Contexts<Variables> = {
   'ethereum-dev': ethereumDev,
   polygon,
   sepolia,
+  'sepolia-devnet': sepoliaDevnet,
   testnet,
 };
 
