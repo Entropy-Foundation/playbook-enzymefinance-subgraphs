@@ -3,10 +3,10 @@ import { Variables } from '../subgraph.config';
 
 const ZERO = '0x0000000000000000000000000000000000000000';
 
-// Devnet deployment (contracts deployed 21/07/2026) — same Sepolia chain as the
-// `sepolia` (testnet) context, different contract set, deployed to a SEPARATE
-// Graph Studio subgraph. Shares all mappings/schema/abis with testnet; only the
-// addresses below differ.
+// Devnet deployment (contracts redeployed 31/07/2026) — same Sepolia chain as
+// the `sepolia` (testnet) context, different contract set, deployed to a
+// SEPARATE Graph Studio subgraph. Shares all mappings/schema/abis with testnet;
+// only the addresses below differ.
 export const sepoliaDevnet: Context<Variables> = {
   // NOTE: this is the Studio slug. Must be DIFFERENT from the testnet context's
   // `name` ('playbook-subgrap') and must match the subgraph you create in Studio.
@@ -14,11 +14,11 @@ export const sepoliaDevnet: Context<Variables> = {
   deploymentId: 'playbook-enzyme-devnet',
   network: 'sepolia',
   variables: {
-    // Devnet start block (contracts deployed 21/07/2026).
+    // Devnet start block (31/07/2026 contracts).
     block: 11311300,
-    instructionInbox: '0xD728DB36D8c209b09B798BC5A581137Da015b3fc',
+    instructionInbox: '0xa39A801683a055f3c7f28F8d3d7fFcC5512C1654',
     instructionInboxDeploymentBlock: 11311300,
-    bridgeManager: '0xd0AA79e1887C10Dc0Be310939e72451AF8c93c26',
+    bridgeManager: '0xB55Bae5e4F4766187da4b762315Fea7e13EC7B41',
     bridgeManagerDeploymentBlock: 11311300,
     hypernova: '0x76C401D66ee424678A9d9e0530bB5B6818988233',
     hypernovaDeploymentBlock: 11311300,
@@ -49,13 +49,13 @@ export const sepoliaDevnet: Context<Variables> = {
       ethxAddress: ZERO,
     },
     persistent: {
-      addressListRegistryAddress: '0x5F98B7eAe1beaacaC561C82bA8BC9c746e7893C8',
-      dispatcherAddress: '0x29494Af51a3de233aA2A0b70b11873b444F44F0f',
-      externalPositionFactoryAddress: '0xfB2bAFEe7B06886f8B8f533B8b66e47EcBbae95E',
-      gatedRedemptionQueueSharesWrapperFactoryAddress: '0x0De5b244C6309d1F1f22a58a43F760386e7672a5',
+      addressListRegistryAddress: '0x93Fc97061343aE336e14ccb215B5079c467B2355',
+      dispatcherAddress: '0x076527BC28f7FE589DeD97e1170181aF2E91c01b',
+      externalPositionFactoryAddress: '0x6537090DB6c9d4B8C9D3ddc7C2FFc0C7Cf349A00',
+      gatedRedemptionQueueSharesWrapperFactoryAddress: '0x14154bF98d0A0a4A2AcD90E0f151584536F77A37',
       manualValueOracleFactoryAddress: ZERO,
       pendleMarketsRegistryAddress: ZERO,
-      protocolFeeReserveLibAddress: '0xc25Ce4Aa078262E719Bf65F07Ed67e0f67d4f4b4',
+      protocolFeeReserveLibAddress: '0x08B0De9ae23f10CBdb57480B23396D86EA9C244c',
       sharesSplitterFactoryAddress: ZERO,
       singleAssetRedemptionQueueFactoryAddress: ZERO,
       singleAssetDepositQueueFactoryAddress: ZERO,
@@ -113,11 +113,11 @@ export const sepoliaDevnet: Context<Variables> = {
         vaultLibAddress: ZERO,
       },
       v4: {
-        allowedAdapterIncomingAssetsPolicyAddress: '0xE472e43CACB2d29BB7fCD8a29E0142bb45759a96',
+        allowedAdapterIncomingAssetsPolicyAddress: '0xbbdA3687efd56b5eB8895D7F8deb3b92EE65055F',
         allowedAdaptersPerManagerPolicyAddress: ZERO,
-        allowedAdaptersPolicyAddress: '0xEed33B20A6c1308Bd077F4060a3Eb6Ee19280965',
-        allowedAssetsForRedemptionPolicyAddress: '0xeb0224fFb9144067687f08481AaB08A1D0F27d78',
-        allowedDepositRecipientsPolicyAddress: '0x056E6334A9fe436F79eB9668141901a3D67e01E3',
+        allowedAdaptersPolicyAddress: '0xC567881fC4781335f4bf11212Cd58dbc29e7e806',
+        allowedAssetsForRedemptionPolicyAddress: '0xC489e918D241523B648Ba1476cAd56A3B093cF7E',
+        allowedDepositRecipientsPolicyAddress: '0x0a777972B70C856fCAf906dBB94DAAba2a04AEc5',
         allowedExternalPositionTypesPerManagerPolicyAddress: ZERO,
         allowedExternalPositionTypesPolicyAddress: ZERO,
         allowedRedeemersForSpecificAssetsPolicyAddress: ZERO,
@@ -126,33 +126,33 @@ export const sepoliaDevnet: Context<Variables> = {
         auraBalancerV2LpStakingAdapterAddress: ZERO,
         balancerV2LiquidityAdapterAddress: ZERO,
         convexCurveLpStakingAdapterAddress: ZERO,
-        compoundV3AdapterAddress: '0xbb2D4d98d9BF64e1C565FD63759690e76a608e2a',
-        comptrollerLibAddress: '0xE8e7fBB6f81d406d3CA5A9d7F01BF3E954006071',
-        cumulativeSlippageTolerancePolicyAddress: '0x0f4FcA79247e289Cd03Bf69F14dBB825f5aF4C09',
+        compoundV3AdapterAddress: '0x371D67b6E3A3B6A7745817f0C6d498f17BFa4356',
+        comptrollerLibAddress: '0x6C1f6cEe60050A28Ed7A5A91b0B3E4B6C1c76F3e',
+        cumulativeSlippageTolerancePolicyAddress: '0x18437D52fcD58574e6B17EB96c516721Ef796473',
         curveLiquidityAdapterAddress: ZERO,
         disallowedAdapterIncomingAssetsPolicyAddress: ZERO,
         entranceRateBurnFeeAddress: ZERO,
         entranceRateDirectFeeAddress: ZERO,
         exitRateBurnFeeAddress: ZERO,
         exitRateDirectFeeAddress: ZERO,
-        externalPositionManagerAddress: '0x6c56f9a206030492896621EF3b21A71f28F784FB',
-        feeManagerAddress: '0x53259434ca99110a9623A7E18Ca7cad5BbacECD0',
-        fundDeployerAddress: '0xc1E14aA2C433fBd342a915C1D829857349A2e2ff',
-        gasRelayPaymasterFactoryAddress: '0xc6C1FcE8a73bc0D898ee5d8f642a5a684a5B20BE',
-        integrationManagerAddress: '0x55b241651639736820E1c147e4600B25FAE747e8',
-        managementFeeAddress: '0xeD514eb7114A3150c52f064aA59F0AE4Be94D8ab',
+        externalPositionManagerAddress: '0x9B305442326F5F45D5FbfC000843d26bCb800bf4',
+        feeManagerAddress: '0x435a68D7B2D2716029a0E500743f29eB331c3cE0',
+        fundDeployerAddress: '0x82d16E428E5A7d138afD6B8ba8569F1dE29c0306',
+        gasRelayPaymasterFactoryAddress: '0x83f8B3DFAdC313b45b58Af2B822aD0bBE92DcAfF',
+        integrationManagerAddress: '0xDB9C545e19807d4770B59b5fa2E2e6f3DC9D6907',
+        managementFeeAddress: '0x1b00a0c283A2294df847e8Ccc2549C5FE4b1621b',
         minAssetBalancesPostRedemptionPolicyAddress: ZERO,
-        minMaxInvestmentPolicyAddress: '0x3811f79466EbaFCC44201BFdb7c31b0FCF8539b7',
+        minMaxInvestmentPolicyAddress: '0xEe848e63B10f64F072bB4C8E24dC478FEb49404D',
         minSharesSupplyFeeAddress: ZERO,
         noDepegOnRedeemSharesForSpecificAssetsPolicyAddress: ZERO,
         onlyRemoveDustExternalPositionPolicyAddress: ZERO,
         onlyUntrackDustOrPricelessAssetsPolicyAddress: ZERO,
-        performanceFeeAddress: '0x2524AABa2191e4A69Ec22516336381E15fb3f7C2',
-        policyManagerAddress: '0xb7F4574b3064864A1A3627bef19aF1321951790E',
-        protocolFeeTrackerAddress: '0x28cC25cbEDc3626F5f0222ebED86D3fa0A421460',
+        performanceFeeAddress: '0x5D21E45697D91E5b9b65ac0D604123370181D4b8',
+        policyManagerAddress: '0xf01c9eb040Db5DF3F937213664AC3cB1BC3c3535',
+        protocolFeeTrackerAddress: '0xf67ef57083C89d1Cf14dDF845B38e1fBd552E899',
         unpermissionedActionsWrapperAddress: ZERO,
-        valueInterpreterAddress: '0x64c0F630eec4De6D4b3593cd8b16e0dB8A27655B',
-        vaultLibAddress: '0x5e1Bf51206Cf8ffAaa3d5D1C712DE24319c9b4BB',
+        valueInterpreterAddress: '0x9a6dE8A3981f83f55942B86f69fC172937bcd4F2',
+        vaultLibAddress: '0xB3F19820002f0d8654Eb8186f3404033443588da',
       },
     },
   },
