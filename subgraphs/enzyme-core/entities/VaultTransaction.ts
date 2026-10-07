@@ -66,6 +66,7 @@ export function createVaultExecutionRevertedTransaction(
 export function createVaultSwapTransaction(
   vaultId: string,
   adapter: Address,
+  selector: Bytes,
   fromAsset: Address,
   fromAmount: BigInt,
   toAsset: Address,
@@ -74,6 +75,7 @@ export function createVaultSwapTransaction(
 ): void {
   let tx = newVaultTransaction(vaultId, 'Swap', event);
   tx.adapter = adapter as Bytes;
+  tx.selector = selector;
   tx.fromAsset = fromAsset as Bytes;
   tx.fromAmount = fromAmount;
   tx.toAsset = toAsset as Bytes;

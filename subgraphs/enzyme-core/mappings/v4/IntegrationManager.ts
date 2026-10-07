@@ -157,6 +157,7 @@ export function handleCallOnIntegrationExecutedForFund(event: CallOnIntegrationE
     createVaultSwapTransaction(
       vault.id,
       event.params.adapter,
+      event.params.selector,
       event.params.spendAssets[0],
       event.params.spendAssetAmounts[0],
       event.params.incomingAssets[0],

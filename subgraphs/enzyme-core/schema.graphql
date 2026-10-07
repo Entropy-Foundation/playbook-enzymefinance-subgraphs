@@ -2614,6 +2614,7 @@ type VaultTransaction @entity(immutable: true) {
   sharesBurned: BigInt
 
   adapter: Bytes
+  selector: Bytes
   fromAsset: Bytes
   fromAmount: BigInt
   toAsset: Bytes
