@@ -2404,6 +2404,8 @@ type GatedRedemptionQueueSharesWrapperRedemptionRequest @entity(immutable: false
   wrapper: GatedRedemptionQueueSharesWrapper!
   account: Account!
   shares: BigDecimal!
+  "The pending request in raw share units (18 decimals), kept from the wrapper's own events. Its value when the request is removed is the queue state just before that event. Null only on a request first seen through a removal."
+  sharesRaw: BigInt
   updatedAt: Int!
 }
 

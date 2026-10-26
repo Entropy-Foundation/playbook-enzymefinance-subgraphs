@@ -377,6 +377,9 @@ export function handleRedemptionRequestAdded(event: RedemptionRequestAdded): voi
 
   let request = ensureGatedRedemptionQueueSharesWrapperRedemptionRequest(wrapper, account);
   request.shares = request.shares.plus(toBigDecimal(event.params.sharesAmount));
+  let pendingRaw = request.sharesRaw;
+  request.sharesRaw =
+    pendingRaw === null ? event.params.sharesAmount : (pendingRaw as BigInt).plus(event.params.sharesAmount);
   request.timestamp = event.block.timestamp.toI32();
   request.save();
 
@@ -404,6 +407,9 @@ export function handleRedemptionRequestRemoved(event: RedemptionRequestRemoved):
   let account = ensureAccount(event.params.user, event);
 
   let request = ensureGatedRedemptionQueueSharesWrapperRedemptionRequest(wrapper, account);
+  // The shares the user had queued — the queue state just before this event,
+  // since the request is gone once it has run.
+  let cancelledShares = request.sharesRaw;
   store.remove('GatedRedemptionQueueSharesWrapperRedemptionRequest', request.id);
 
   // RedemptionRequestRemoved fires in two cases:
@@ -423,7 +429,7 @@ export function handleRedemptionRequestRemoved(event: RedemptionRequestRemoved):
     event.address,
     UserVaultActivityType.REDEMPTION_CANCELLED,
     event,
-    null,
+    cancelledShares,
     null,
     null,
   );
@@ -486,7 +492,12 @@ export function handleRedeemed(event: Redeemed): void {
   if (request.shares.minus(sharesAmount).equals(ZERO_BD)) {
     store.remove('GatedRedemptionQueueSharesWrapperRedemptionRequest', request.id);
   } else {
-    request.shares.minus(sharesAmount);
+    // A partial redemption leaves the rest queued.
+    request.shares = request.shares.minus(sharesAmount);
+    let pendingRaw = request.sharesRaw;
+    if (pendingRaw !== null) {
+      request.sharesRaw = (pendingRaw as BigInt).minus(event.params.sharesAmount);
+    }
     request.save();
   }
 }

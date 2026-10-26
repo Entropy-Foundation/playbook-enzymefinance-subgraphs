@@ -15,7 +15,7 @@ import {
 
 export function handleFundCreationInitiated(event: FundCreationInitiated): void {
   let vault = useVault(event.params.vaultAddress.toHex());
-  vault.strategyId = event.params.strategyId;
+  // The bound strategy comes from the Supra bind/unbind events, not from this event's strategyId.
   vault.fundCreator = event.transaction.from;
   vault.save();
 }
