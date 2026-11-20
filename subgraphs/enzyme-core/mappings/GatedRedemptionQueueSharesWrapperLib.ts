@@ -59,6 +59,7 @@ import {
   wasRedemptionExecutedInTx,
   markRedemptionCancelledPending,
   consumeRedemptionCancelledPending,
+  removeUserVaultActivity,
 } from '../entities/UserVaultPosition';
 import { createAssetAmount } from '../entities/AssetAmount';
 import {
@@ -468,7 +469,7 @@ export function handleRedeemed(event: Redeemed): void {
 
   let pendingCancelledId = consumeRedemptionCancelledPending(event, event.params.user, event.address);
   if (pendingCancelledId !== null) {
-    store.remove('UserVaultActivity', pendingCancelledId as string);
+    removeUserVaultActivity(pendingCancelledId as string);
   }
 
   appendUserVaultActivity(

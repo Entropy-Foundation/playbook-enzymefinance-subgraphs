@@ -1,12 +1,31 @@
 import { Address, BigInt, Bytes, ethereum } from '@graphprotocol/graph-ts';
-import { VaultTransaction } from '../generated/schema';
+import { VaultTransaction, VaultTxCount } from '../generated/schema';
 
 function vaultTransactionId(event: ethereum.Event): string {
   return event.transaction.hash.toHex() + '-' + event.logIndex.toString();
 }
 
+// One more transaction of `type` on the vault — the Txs tab's total.
+function countVaultTransaction(vaultId: string, type: string): void {
+  let id = vaultId + '-' + type;
+  let counter = VaultTxCount.load(id);
+  if (counter == null) {
+    counter = new VaultTxCount(id);
+    counter.vault = vaultId;
+    counter.type = type;
+    counter.count = BigInt.zero();
+  }
+  counter.count = counter.count.plus(BigInt.fromI32(1));
+  counter.save();
+}
+
 function newVaultTransaction(vaultId: string, type: string, event: ethereum.Event): VaultTransaction {
-  let tx = new VaultTransaction(vaultTransactionId(event));
+  let id = vaultTransactionId(event);
+  // Counted once per transaction: an id already stored is the same event.
+  if (VaultTransaction.load(id) == null) {
+    countVaultTransaction(vaultId, type);
+  }
+  let tx = new VaultTransaction(id);
   tx.vault = vaultId;
   tx.type = type;
   tx.blockNumber = event.block.number;

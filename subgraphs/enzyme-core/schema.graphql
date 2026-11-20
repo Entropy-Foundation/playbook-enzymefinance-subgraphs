@@ -2494,6 +2494,16 @@ enum UserVaultActivityType {
   REDEMPTION_EXECUTED # wrapper.Redeemed
 }
 
+# Activities per user and type — the Portfolio Activity tab's total. Moved by
+# `appendUserVaultActivity` and `removeUserVaultActivity`, so it always equals
+# the list's count.
+type UserVaultActivityCount @entity(immutable: false) {
+  id: ID! # `${user}-${type}`
+  user: Bytes!
+  type: UserVaultActivityType!
+  count: BigInt!
+}
+
 # Transient marker used by the wrapper mapping to disambiguate
 # RedemptionRequestRemoved between a real cancellation and the queue cleanup
 # that fires alongside Redeemed in redeemFromQueue. Set in handleRedeemed,
@@ -2624,6 +2634,16 @@ type VaultTransaction @entity(immutable: true) {
 
   sender: Bytes
   chainId: BigInt
+}
+
+# Transactions per vault and type — the Txs tab's total, summed over the
+# selected types in one read. Kept by `newVaultTransaction`, the one place a
+# VaultTransaction is created, so it always equals the list's count.
+type VaultTxCount @entity(immutable: false) {
+  id: ID! # `${vault}-${type}`
+  vault: Vault!
+  type: VaultTxType!
+  count: BigInt!
 }
 
 # Cross-chain strategy-execution operation legs (Ethereum side).

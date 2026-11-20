@@ -1,9 +1,10 @@
-import { Address, BigInt, Bytes, ethereum, log } from '@graphprotocol/graph-ts';
+import { Address, BigInt, Bytes, ethereum, log, store } from '@graphprotocol/graph-ts';
 import {
   GatedRedemptionQueueSharesWrapper,
   PendingRedemptionCancelled,
   RedemptionExecutedInTxMarker,
   UserVaultActivity,
+  UserVaultActivityCount,
   UserVaultPosition,
   Vault,
 } from '../generated/schema';
@@ -56,6 +57,30 @@ export class UserVaultActivityType {
   static readonly REDEMPTION_EXECUTED: string = 'REDEMPTION_EXECUTED';
 }
 
+// Move a user's activity total of `type` by `delta` — the Activity tab's count.
+function countUserVaultActivity(user: Bytes, type: string, delta: i32): void {
+  let id = user.toHex() + '-' + type;
+  let counter = UserVaultActivityCount.load(id);
+  if (counter == null) {
+    counter = new UserVaultActivityCount(id);
+    counter.user = user;
+    counter.type = type;
+    counter.count = BigInt.zero();
+  }
+  counter.count = counter.count.plus(BigInt.fromI32(delta));
+  counter.save();
+}
+
+// Remove an activity row and take it out of its user's total.
+export function removeUserVaultActivity(id: string): void {
+  let activity = UserVaultActivity.load(id);
+  if (activity == null) {
+    return;
+  }
+  countUserVaultActivity(activity.user, activity.type, -1);
+  store.remove('UserVaultActivity', id);
+}
+
 export function appendUserVaultActivity(
   user: Address,
   wrapper: Address,
@@ -67,7 +92,12 @@ export function appendUserVaultActivity(
 ): UserVaultActivity {
   let position = ensureUserVaultPosition(user, wrapper, event);
 
-  let activity = new UserVaultActivity(activityId(event, user));
+  let id = activityId(event, user);
+  // Counted once per activity: an id already stored is the same event.
+  if (UserVaultActivity.load(id) == null) {
+    countUserVaultActivity(user, type, 1);
+  }
+  let activity = new UserVaultActivity(id);
   activity.position = position.id;
   activity.user = user;
   activity.wrapper = wrapper;
